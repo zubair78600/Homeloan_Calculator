@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EMI Calculator</title>
+<link href="styles.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.4;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 30px 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.top-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    align-items: flex-start;
+}
+
+.calculator-box,
+.chart-section {
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08), 
+                inset 0 -2px 6px rgba(0,0,0,0.04);
+    transition: all 0.4s ease;
+}
+
+.calculator-box {
+    width: 400px;
+    height: 350px;
+    padding: 20px;
+}
+
+.chart-section {
+    width: 420px;
+    height: 350px;
+    padding: 15px;
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    height: 100%;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 6px;
+}
+
+.input-group label {
+    font-weight: bold;
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+.input-group input {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+.button-group button {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+/* PDF button */
+.button-group button:first-child {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.button-group button:first-child:hover {
+    background-color: rgba(231, 76, 60, 0.25);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+}
+
+/* Excel button */
+.button-group button:last-child {
+    background-color: rgba(39, 174, 96, 0.15);
+    color: #27ae60;
+    border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.button-group button:last-child:hover {
+    background-color: rgba(39, 174, 96, 0.25);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+}
+
+.button-group button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Add icons to buttons */
+.button-group button::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+}
+
+.button-group button:first-child::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 512'%3E%3Cpath fill='white' d='M181.9 256.1c-5-16-4.9-46.9-2-46.9 8.4 0 7.6 36.9 2 46.9zm-1.7 47.2c-7.7 20.2-17.3 43.3-28.4 62.7 18.3-7 39-17.2 62.9-21.9-12.7-9.6-24.9-23.4-34.5-40.8zM86.1 428.1c0 .8 13.2-5.4 34.9-40.2-6.7 6.3-29.1 24.5-34.9 40.2zM248 160h136v328c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V24C0 10.7 10.7 0 24 0h200v136c0 13.2 10.8 24 24 24zm-8 171.8c-20-12.2-33.3-29-42.7-53.8 4.5-18.5 11.6-46.6 6.2-64.2-4.7-29.4-42.4-26.5-47.8-6.8-5 18.3-.4 44.1 8.1 77-11.6 27.6-28.7 64.6-40.8 85.8-.1 0-.1.1-.2.1-27.1 13.9-73.6 44.5-54.5 68 5.6 6.9 16 10 21.5 10 17.9 0 35.7-18 61.1-61.8 25.8-8.5 54.1-19.1 79-23.2 21.7 11.8 47.1 19.5 64 19.5 29.2 0 31.2-32 19.7-43.4-13.9-13.6-54.3-9.7-73.6-7.2zM377 105L279 7c-4.5-4.5-10.6-7-17-7h-6v128h128v-6.1c0-6.3-2.5-12.4-7-16.9zm-74.1 255.3c4.1-2.7-2.5-11.9-42.8-9 37.1 15.8 42.8 9 42.8 9z'/%3E%3C/svg%3E");
+}
+
+.button-group button:last-child::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 512'%3E%3Cpath fill='white' d='M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm60.1 106.5L224 336l60.1 93.5c5.1 8-.6 18.5-10.1 18.5h-34.9c-4.4 0-8.5-2.4-10.6-6.3C208.9 405.5 192 373 192 373c-6.4 14.8-10 20-36.6 68.8-2.1 3.9-6.1 6.3-10.5 6.3H110c-9.5 0-15.2-10.5-10.1-18.5l60.3-93.5-60.3-93.5c-5.2-8 .6-18.5 10.1-18.5h34.8c4.4 0 8.5 2.4 10.6 6.3 26.1 48.8 20 33.6 36.6 68.5 0 0 6.1-11.7 36.6-68.5 2.1-3.9 6.2-6.3 10.6-6.3H274c9.5-.1 15.2 10.4 10.1 18.4z'/%3E%3C/svg%3E");
+}
+
+.chart-container {
+    width: 300px;
+    height: 300px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border: none;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08), 
+                inset 0 -2px 6px rgba(0,0,0,0.04);
+}
+
+.chart-container:hover {
+    transform: scale(1.02) translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1), 
+                inset 0 -2px 6px rgba(0,0,0,0.04);
+}
+
+.chart-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.chart-info {
+    text-align: center;
+    padding: 20px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    box-sizing: border-box;
+    max-width: 80%;
+}
+
+.chart-info h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    margin-top: 15px;
+    letter-spacing: 0.5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.chart-percentage {
+    font-size: 26px;
+    font-weight: bold;
+    margin: 5px 0;
+    letter-spacing: 0.5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.principal-percentage {
+    color: white;
+}
+
+.interest-percentage {
+    color: white;
+}
+
+.chart-amount {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.table-container {
+    margin-top: 30px;
+    overflow-x: auto;
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: white;
+}
+
+th {
+    background-color: #e9ecef;
+    color: #333;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0;
+}
+
+td {
+    padding: 12px 15px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    font-size: 13px;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Add specific styles for amCharts elements */
+#chartdiv {
+    width: 100%;
+    height: 100%;
+}
+
+.legend-container {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    padding: 5px 0;
+    width: 100%;
+    margin-top: 7px;
+    position: relative;
+    top: -8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    padding: 4px 12px;
+    border-radius: 16px;
+}
+
+.legend-item:first-child {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+.legend-item:last-child {
+    background-color: rgba(255, 107, 107, 0.1);
+}
+
+.legend-item:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
+.legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.legend-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+
+/* Add styles for header buttons */
+.header-button {
+    background-color: rgba(233, 236, 239, 0.6);
+    color: #333;
+    font-weight: bold;
+    padding: 12px 15px;
+    text-align: center;
+    border: 1px solid rgba(222, 226, 230, 0.6);
+    border-bottom: 2px solid rgba(222, 226, 230, 0.8);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 13px;
+    backdrop-filter: blur(3px);
+}
+
+.header-button:hover {
+    background-color: rgba(248, 249, 250, 0.8);
+}
+
+/* Make header buttons fill th completely */
+th .header-button {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Add active state for header button */
+.header-button:active {
+    background-color: #e2e6ea;
+}
+
+/* First column (Month) specific style - adjust width for month-year format */
+td:first-child {
+    text-align: center;
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+/* Add some spacing between currency symbol and number */
+td:not(:first-child) {
+    letter-spacing: 0.5px;
+}
+
+.input-with-slider {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.input-with-slider input[type="number"] {
+    width: 100px;
+    padding: 5px;
+    border: 1px solid rgba(222, 226, 230, 0.8);
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.input-with-slider input[type="number"]:focus {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: rgba(105, 179, 231, 0.5);
+}
+
+/* Style the slider track */
+.input-with-slider input[type="range"] {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    background: linear-gradient(to right, #69b3e7 0%, #69b3e7 50%, #e2e8f0 50%, #e2e8f0 100%);
+    border-radius: 4px;
+    outline: none;
+}
+
+/* Style the slider thumb */
+.input-with-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #69b3e7;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+}
+
+.input-with-slider input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #69b3e7;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+}
+
+/* Hover effects */
+.input-with-slider input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.input-with-slider input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+/* Active state */
+.input-with-slider input[type="range"]:active::-webkit-slider-thumb {
+    transform: scale(0.95);
+}
+
+.input-with-slider input[type="range"]:active::-moz-range-thumb {
+    transform: scale(0.95);
+}
+
+/* Adjust input group spacing */
+.input-group {
+    margin-bottom: 6px;
+}
+
+.main-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-header h1 {
+    font-size: 24px;
+    color: #333;
+    margin: 0;
+    font-weight: 500;
+    display: inline-block;
+    padding: 10px 30px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.main-header h1:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    background: rgba(255, 255, 255, 1);
+    color: #000;
+}
+
+.main-header h1:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Export buttons styles */
+.export-buttons-container {
+    display: flex;
+    gap: 10px;
+    margin-top: -5px;
+    padding: 0 20px;
+    justify-content: center;
+}
+
+.export-btn {
+    width: 100px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.pdf-btn {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.pdf-btn:hover {
+    background-color: rgba(231, 76, 60, 0.25);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+}
+
+.excel-btn {
+    background-color: rgba(39, 174, 96, 0.15);
+    color: #27ae60;
+    border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.excel-btn:hover {
+    background-color: rgba(39, 174, 96, 0.25);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+}
+
+.export-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Add icons to buttons */
+.pdf-btn::before {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 512'%3E%3Cpath fill='%23e74c3c' d='M181.9 256.1c-5-16-4.9-46.9-2-46.9 8.4 0 7.6 36.9 2 46.9zm-1.7 47.2c-7.7 20.2-17.3 43.3-28.4 62.7 18.3-7 39-17.2 62.9-21.9-12.7-9.6-24.9-23.4-34.5-40.8zM86.1 428.1c0 .8 13.2-5.4 34.9-40.2-6.7 6.3-29.1 24.5-34.9 40.2zM248 160h136v328c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V24C0 10.7 10.7 0 24 0h200v136c0 13.2 10.8 24 24 24zm-8 171.8c-20-12.2-33.3-29-42.7-53.8 4.5-18.5 11.6-46.6 6.2-64.2-4.7-29.4-42.4-26.5-47.8-6.8-5 18.3-.4 44.1 8.1 77-11.6 27.6-28.7 64.6-40.8 85.8-.1 0-.1.1-.2.1-27.1 13.9-73.6 44.5-54.5 68 5.6 6.9 16 10 21.5 10 17.9 0 35.7-18 61.1-61.8 25.8-8.5 54.1-19.1 79-23.2 21.7 11.8 47.1 19.5 64 19.5 29.2 0 31.2-32 19.7-43.4-13.9-13.6-54.3-9.7-73.6-7.2zM377 105L279 7c-4.5-4.5-10.6-7-17-7h-6v128h128v-6.1c0-6.3-2.5-12.4-7-16.9zm-74.1 255.3c4.1-2.7-2.5-11.9-42.8-9 37.1 15.8 42.8 9 42.8 9z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+}
+
+.excel-btn::before {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 512'%3E%3Cpath fill='%2327ae60' d='M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm60.1 106.5L224 336l60.1 93.5c5.1 8-.6 18.5-10.1 18.5h-34.9c-4.4 0-8.5-2.4-10.6-6.3C208.9 405.5 192 373 192 373c-6.4 14.8-10 20-36.6 68.8-2.1 3.9-6.1 6.3-10.5 6.3H110c-9.5 0-15.2-10.5-10.1-18.5l60.3-93.5-60.3-93.5c-5.2-8 .6-18.5 10.1-18.5h34.8c4.4 0 8.5 2.4 10.6 6.3 26.1 48.8 20 33.6 36.6 68.5 0 0 6.1-11.7 36.6-68.5 2.1-3.9 6.2-6.3 10.6-6.3H274c9.5-.1 15.2 10.4 10.1 18.4z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+}
+
+/* Hover effects */
+.calculator-box:hover,
+.chart-section:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1), 
+                inset 0 -2px 6px rgba(0,0,0,0.04);
+}
+
+.date-selector {
+    position: absolute;
+    right: 20px; /* Position to the right of the header */
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 5px 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.date-selector:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.date-selector label {
+    font-weight: bold;
+    font-size: 11px;
+    color: #333;
+    white-space: nowrap;
+}
+
+.date-selector input[type="date"] {
+    padding: 4px 6px;
+    border: 1px solid rgba(222, 226, 230, 0.8);
+    border-radius: 4px;
+    font-size: 11px;
+    width: 120px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+/* Payment Summary Styles */
+.payment-summary-container {
+    margin-bottom: 20px;
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08), 
+                inset 0 -2px 6px rgba(0,0,0,0.04);
+    transition: all 0.4s ease;
+    padding: 15px 20px;
+}
+
+.payment-summary-container:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1), 
+                inset 0 -2px 6px rgba(0,0,0,0.04);
+}
+
+.payment-summary-container h2 {
+    font-size: 18px;
+    color: #4a90e2;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.payment-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+    flex: 1;
+    padding: 12px 15px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.summary-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.summary-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.summary-value {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.summary-item:nth-child(3) {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+.summary-item:nth-child(3) .summary-value {
+    color: #4a90e2;
+} </style></head>
+<body>
+<div class="container">
+<div class="main-header">
+<h1>EMI Calculator</h1>
+<div class="date-selector">
+<label for="startDate">Loan Start:</label>
+<input id="startDate" type="date"/>
+</div>
+</div>
+<div class="top-section">
+<div class="calculator-box">
+<div class="input-section">
+<div class="input-group">
+<label for="principal">Principal (₹):</label>
+<div class="input-with-slider">
+<input id="principal" type="number" value="5000000"/>
+<input id="principalSlider" max="10000000" min="100000" step="100000" type="range" value="5000000"/>
+</div>
+</div>
+<div class="input-group">
+<label for="interest">Interest (%):</label>
+<div class="input-with-slider">
+<input id="interest" step="0.1" type="number" value="9.55"/>
+<input id="interestSlider" max="20" min="5" step="0.1" type="range" value="9.55"/>
+</div>
+</div>
+<div class="input-group">
+<label for="tenure">Tenure (years):</label>
+<div class="input-with-slider">
+<input id="tenure" type="number" value="20"/>
+<input id="tenureSlider" max="30" min="1" type="range" value="20"/>
+</div>
+</div>
+<div class="input-group">
+<label for="extraEmi">Yearly Extra EMI (₹):</label>
+<div class="input-with-slider">
+<input id="extraEmi" type="number" value="200000"/>
+<input id="extraEmiSlider" max="1000000" min="0" step="10000" type="range" value="200000"/>
+</div>
+</div>
+<div class="input-group">
+<label for="hikePercentage">Yearly Hike (%):</label>
+<div class="input-with-slider">
+<input id="hikePercentage" step="0.1" type="number" value="0"/>
+<input id="hikeSlider" max="20" min="0" step="0.1" type="range" value="0"/>
+</div>
+</div>
+<div class="export-buttons-container">
+<button class="export-btn pdf-btn" onclick="exportPDF()">PDF</button>
+<button class="export-btn excel-btn" onclick="exportExcel()">Excel</button>
+</div>
+</div>
+</div>
+<div class="chart-section">
+<div class="summary-hidden" style="display: none;">
+<span id="totalPrincipal">₹0</span>
+<span id="totalInterest">₹0</span>
+<span id="totalAmount">₹0</span>
+</div>
+<div class="chart-container">
+<canvas id="pieChart"></canvas>
+<div class="chart-overlay">
+<div class="chart-info">
+<h3>Principal</h3>
+<div class="chart-percentage principal-percentage">0%</div>
+<div class="chart-amount principal-amount">₹0</div>
+<h3>Interest</h3>
+<div class="chart-percentage interest-percentage">0%</div>
+<div class="chart-amount interest-amount">₹0</div>
+</div>
+</div>
+</div>
+<div class="legend-container">
+<div class="legend-item">
+<div class="legend-color" style="background-color: #4a90e2;"></div>
+<span class="legend-text">Principal</span>
+</div>
+<div class="legend-item">
+<div class="legend-color" style="background-color: #ff6b6b;"></div>
+<span class="legend-text">Interest</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Payment Summary Dashboard -->
+<div class="payment-summary-container">
+<h2>Payment Summary</h2>
+<div class="payment-summary">
+<div class="summary-item">
+<span class="summary-label">Total Principal:</span>
+<span class="summary-value" id="summaryPrincipal">₹0</span>
+</div>
+<div class="summary-item">
+<span class="summary-label">Total Interest:</span>
+<span class="summary-value" id="summaryInterest">₹0</span>
+</div>
+<div class="summary-item">
+<span class="summary-label">Total Amount:</span>
+<span class="summary-value" id="summaryAmount">₹0</span>
+</div>
+<div class="summary-item">
+<span class="summary-label">Monthly EMI:</span>
+<span class="summary-value" id="monthlyEMI">₹0</span>
+</div>
+<div class="summary-item" id="totalSavingsItem" style="display: none;">
+<span class="summary-label">Total Amount Saved:</span>
+<span class="summary-value" id="totalSavings">₹0</span>
+</div>
+<div class="summary-item">
+<span class="summary-label">Number of Months:</span>
+<span class="summary-value" id="summaryMonths">0</span>
+</div>
+<div class="summary-item">
+<span class="summary-label">Number of Years:</span>
+<span class="summary-value" id="summaryYears">0</span>
+</div>
+</div>
+</div>
+<div class="table-container">
+<table id="emiTable">
+<thead>
+<tr>
+<!-- Headers will be generated dynamically in JavaScript -->
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+<script src="script.js"></script>
+<script>let pieChart = null;
+
+function calculateEMI() {
+    const principal = parseFloat(document.getElementById('principal').value);
+    const interestRate = parseFloat(document.getElementById('interest').value);
+    const tenure = parseFloat(document.getElementById('tenure').value);
+    const yearlyExtraEmi = parseFloat(document.getElementById('extraEmi').value) || 0;
+    const hikePercentage = parseFloat(document.getElementById('hikePercentage').value) || 0;
+
+    const monthlyInterestRate = interestRate / (12 * 100);
+    const numberOfMonths = tenure * 12;
+
+    // Calculate base EMI without hikes
+    const baseEmi = principal * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfMonths) / 
+                (Math.pow(1 + monthlyInterestRate, numberOfMonths) - 1);
+
+    // Calculate standard loan without extra EMI or hikes for comparison
+    let standardRemainingBalance = principal;
+    let standardTotalInterestPaid = 0;
+    
+    for (let month = 1; month <= numberOfMonths && standardRemainingBalance > 0; month++) {
+        const interestForMonth = standardRemainingBalance * monthlyInterestRate;
+        let principalForMonth = baseEmi - interestForMonth;
+        
+        if (principalForMonth > standardRemainingBalance) {
+            principalForMonth = standardRemainingBalance;
+        }
+        
+        standardTotalInterestPaid += interestForMonth;
+        standardRemainingBalance -= principalForMonth;
+    }
+
+    let remainingBalance = principal;
+    let totalInterestPaid = 0;
+    let currentEmi = baseEmi;
+    let extraEmiForYear = 0;
+    
+    // Update table headers based on whether we have extra EMI or hike percentage
+    const tableHead = document.querySelector('#emiTable thead tr');
+    tableHead.innerHTML = `
+        <th class="header-button">Month</th>
+        <th class="header-button">EMI</th>
+        <th class="header-button">Principal</th>
+        <th class="header-button">Interest</th>
+        <th class="header-button">Balance</th>
+        ${yearlyExtraEmi > 0 ? '<th class="header-button">Extra</th>' : ''}
+        ${hikePercentage > 0 ? '<th class="header-button">Hike Amount</th>' : ''}
+    `;
+    
+    const tableBody = document.querySelector('#emiTable tbody');
+    tableBody.innerHTML = '';
+
+    let isFirstYear = true;
+    
+    // Get start date from the date picker or use current date
+    let startDate;
+    const startDateInput = document.getElementById('startDate').value;
+    
+    if (startDateInput) {
+        startDate = new Date(startDateInput);
+    } else {
+        // Default to current month if no date selected
+        startDate = new Date();
+        startDate.setDate(1); // Set to first day of current month
+    }
+    
+    // For tracking year changes to apply hikes
+    let currentYear = startDate.getFullYear();
+    
+    // Track hike amount and annual EMI
+    let hikeAmount = 0;
+    let annualEmi = baseEmi;
+    
+    // For tracking how many years have passed for compounding hikes
+    let yearsPassed = 0;
+
+    for (let month = 1; month <= numberOfMonths && remainingBalance > 0; month++) {
+        // Calculate current month date
+        const currentDate = new Date(startDate);
+        currentDate.setMonth(startDate.getMonth() + month - 1);
+        
+        // Check if we entered a new year (compared to loan start date)
+        let isNewYear = false;
+        if (currentDate.getFullYear() > currentYear) {
+            currentYear = currentDate.getFullYear();
+            isNewYear = true;
+            yearsPassed++;
+        }
+        
+        // Reset extra EMI at the start of each year
+        if (isNewYear) {
+            extraEmiForYear = yearlyExtraEmi;
+            
+            // Apply yearly EMI hike (compounded annually)
+            if (hikePercentage > 0) {
+                // Store previous EMI for calculating the hike amount
+                const previousEmi = currentEmi;
+                
+                // Apply compound hike: baseEmi * (1 + hikePercentage/100)^yearsPassed
+                currentEmi = baseEmi * Math.pow(1 + hikePercentage/100, yearsPassed);
+                
+                // Calculate the hike amount for this specific annual increase
+                hikeAmount = currentEmi - previousEmi;
+            } else {
+                hikeAmount = 0;
+            }
+        } else {
+            // Reset hike amount for other months
+            hikeAmount = 0;
+        }
+
+        const interestForMonth = remainingBalance * monthlyInterestRate;
+        let principalForMonth = currentEmi - interestForMonth;
+        
+        // Add extra EMI if available for this year
+        let extraEmiThisMonth = 0;
+        if (extraEmiForYear > 0) {
+            extraEmiThisMonth = Math.min(extraEmiForYear, remainingBalance - principalForMonth);
+            principalForMonth += extraEmiThisMonth;
+            extraEmiForYear -= extraEmiThisMonth;
+        }
+
+        // Adjust last EMI to not overpay
+        if (principalForMonth > remainingBalance) {
+            principalForMonth = remainingBalance;
+            currentEmi = principalForMonth + interestForMonth;
+            extraEmiThisMonth = 0;
+        }
+
+        totalInterestPaid += interestForMonth;
+        remainingBalance -= principalForMonth;
+
+        // Format the month name and year for display
+        const monthName = currentDate.toLocaleString('en-US', { month: 'long' });
+        const year = currentDate.getFullYear();
+        const monthDisplay = `${monthName} ${year}`;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${monthDisplay}</td>
+            <td>₹${(currentEmi).toFixed(0)}</td>
+            <td>₹${principalForMonth.toFixed(0)}</td>
+            <td>₹${interestForMonth.toFixed(0)}</td>
+            <td>₹${Math.max(0, remainingBalance).toFixed(0)}</td>
+            ${yearlyExtraEmi > 0 ? `<td>₹${extraEmiThisMonth.toFixed(0)}</td>` : ''}
+            ${hikePercentage > 0 ? `<td>₹${hikeAmount.toFixed(0)}</td>` : ''}
+        `;
+        tableBody.appendChild(row);
+
+        if (remainingBalance <= 0) break;
+    }
+
+    // Update summary
+    const totalAmount = principal + totalInterestPaid;
+    document.getElementById('totalPrincipal').textContent = `₹${principal.toFixed(0)}`;
+    document.getElementById('totalInterest').textContent = `₹${totalInterestPaid.toFixed(0)}`;
+    document.getElementById('totalAmount').textContent = `₹${totalAmount.toFixed(0)}`;
+
+    // Update dashboard payment summary
+    document.getElementById('summaryPrincipal').textContent = `₹${parseInt(principal).toLocaleString('en-IN')}`;
+    document.getElementById('summaryInterest').textContent = `₹${parseInt(totalInterestPaid).toLocaleString('en-IN')}`;
+    document.getElementById('summaryAmount').textContent = `₹${parseInt(totalAmount).toLocaleString('en-IN')}`;
+    document.getElementById('monthlyEMI').textContent = `₹${parseInt(baseEmi).toLocaleString('en-IN')}`;
+
+    // Calculate and display savings information
+    const interestSavedExtraEMI = yearlyExtraEmi > 0 ? standardTotalInterestPaid - totalInterestPaid : 0;
+    const amountSavedHike = hikePercentage > 0 ? standardTotalInterestPaid - totalInterestPaid - interestSavedExtraEMI : 0;
+    const totalSavings = interestSavedExtraEMI + amountSavedHike;
+    
+    // Show/hide and update total savings
+    if (yearlyExtraEmi > 0 || hikePercentage > 0) {
+        document.getElementById('totalSavingsItem').style.display = 'flex';
+        document.getElementById('totalSavings').textContent = `₹${parseInt(totalSavings).toLocaleString('en-IN')}`;
+    } else {
+        document.getElementById('totalSavingsItem').style.display = 'none';
+    }
+    
+    // Calculate the actual number of payments (months) made
+    const actualMonths = document.querySelectorAll('#emiTable tbody tr').length;
+    document.getElementById('summaryMonths').textContent = actualMonths;
+    document.getElementById('summaryYears').textContent = (actualMonths / 12).toFixed(1);
+
+    // Update pie chart
+    updatePieChart(principal, totalInterestPaid);
+    
+    // Update chart overlay values
+    updateChartOverlay(principal, totalInterestPaid);
+}
+
+function updatePieChart(principal, totalInterest) {
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    
+    // Calculate percentages
+    const total = principal + totalInterest;
+    const principalPercentage = Math.round((principal / total) * 100);
+    const interestPercentage = Math.round((totalInterest / total) * 100);
+    
+    // Format currency for display
+    const formatCurrency = (value) => {
+        return '₹' + Math.round(value).toLocaleString('en-IN');
+    };
+    
+    // Destroy existing chart if it exists
+    if (pieChart) {
+        pieChart.destroy();
+    }
+    
+    // Create new chart
+    pieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Principal', 'Interest'],
+            datasets: [{
+                data: [principal, totalInterest],
+                backgroundColor: [
+                    'rgba(74, 144, 226, 0.9)',
+                    'rgba(255, 107, 107, 0.9)'
+                ],
+                borderColor: [
+                    'rgba(74, 144, 226, 1)',
+                    'rgba(255, 107, 107, 1)'
+                ],
+                borderWidth: 1,
+                hoverBackgroundColor: [
+                    'rgba(74, 144, 226, 1)',
+                    'rgba(255, 107, 107, 1)'
+                ],
+                hoverBorderColor: '#ffffff',
+                hoverBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                animateScale: true,
+                animateRotate: true,
+                duration: 1000,
+                easing: 'easeOutCirc'
+            },
+            layout: {
+                padding: 20
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false
+                }
+            }
+        }
+    });
+}
+
+// Debounce function for resize handler
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Add window resize handler with debouncing
+window.addEventListener('resize', debounce(() => {
+    if (pieChart) {
+        pieChart.resize();
+    }
+}, 250));
+
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    
+    // Get current parameter values 
+    const yearlyExtraEmi = parseFloat(document.getElementById('extraEmi').value) || 0;
+    const hikePercentage = parseFloat(document.getElementById('hikePercentage').value) || 0;
+    
+    const doc = new jsPDF({
+        unit: 'pt',
+        format: 'a3',
+        orientation: 'landscape'  // A3 landscape: 1191 x 842 points
+    });
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 60;
+    let yPos = margin;
+
+    // Header Section - adjusted for A3
+    doc.setFillColor(64, 139, 230);
+    doc.rect(0, 0, pageWidth, 100, 'F');
+
+    // Centered Title - larger for A3
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(36);  // Increased font size
+    const title = 'EMI Calculator Report';
+    const titleWidth = doc.getTextWidth(title);
+    const centerX = (pageWidth - titleWidth) / 2;
+    doc.text(title, centerX, 60);
+
+    // Timestamp - adjusted position
+    const now = new Date();
+    const timestamp = now.toLocaleString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+    doc.setFontSize(12);
+    doc.text(timestamp, pageWidth - margin - doc.getTextWidth(timestamp), 60);
+
+    yPos = 140;
+
+    // Create centered container for parameters and summary
+    const containerWidth = 1000;  // Increased for A3
+    const containerX = (pageWidth - containerWidth) / 2;
+
+    // Left box - Loan Parameters
+    const leftBoxWidth = 480;  // Wider for A3
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(220, 220, 220);
+    doc.roundedRect(containerX, yPos, leftBoxWidth, 160, 5, 5, 'FD');
+
+    // Parameters section
+    doc.setTextColor(64, 139, 230);
+    doc.setFontSize(18);
+    doc.text('Loan Parameters', containerX + 20, yPos + 35);
+
+    const params = [
+        ['Principal Amount:', document.getElementById('principal').value.toLocaleString('en-IN')],
+        ['Interest Rate:', `${document.getElementById('interest').value}%`],
+        ['Loan Tenure:', `${document.getElementById('tenure').value} years`],
+        ['Yearly Extra EMI:', document.getElementById('extraEmi').value.toLocaleString('en-IN')],
+        ['Annual EMI Hike:', `${document.getElementById('hikePercentage').value}%`]
+    ];
+
+    doc.setFontSize(12);  // Larger font for content
+    params.forEach((param, index) => {
+        const y = yPos + 65 + (index * 22);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont('helvetica', 'normal');
+        doc.text(param[0], containerX + 30, y);
+        doc.setTextColor(44, 62, 80);
+        doc.setFont('helvetica', 'bold');
+        doc.text(param[1], containerX + 180, y);
+    });
+
+    // Full-width Payment Summary Box (remove the original right box)
+    yPos += 200;
+    
+    // Full-width Payment Summary Box
+    const summaryBoxWidth = containerWidth;
+    const summaryBoxHeight = 200;
+    const summaryBoxX = containerX;
+    
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(220, 220, 220);
+    doc.roundedRect(summaryBoxX, yPos, summaryBoxWidth, summaryBoxHeight, 5, 5, 'FD');
+    
+    // Payment Summary Title - center aligned
+    doc.setTextColor(64, 139, 230);
+    doc.setFontSize(18);
+    const summaryTitle = 'Payment Summary';
+    const summaryTitleWidth = doc.getTextWidth(summaryTitle);
+    doc.text(summaryTitle, summaryBoxX + (summaryBoxWidth / 2) - (summaryTitleWidth / 2), yPos + 35);
+    
+    // Draw separator line
+    doc.setDrawColor(220, 220, 220);
+    doc.line(summaryBoxX + 20, yPos + 45, summaryBoxX + summaryBoxWidth - 20, yPos + 45);
+    
+    // Get all summary data - remove rupee symbols
+    const fullSummaryData = [
+        { label: 'Total Principal:', value: document.getElementById('summaryPrincipal').textContent.replace('₹', '') },
+        { label: 'Total Interest:', value: document.getElementById('summaryInterest').textContent.replace('₹', '') },
+        { label: 'Total Amount:', value: document.getElementById('summaryAmount').textContent.replace('₹', '') },
+        { label: 'Monthly EMI:', value: document.getElementById('monthlyEMI').textContent.replace('₹', '') },
+        { label: 'Total Amount Saved:', value: (document.getElementById('totalSavings').textContent || '₹0').replace('₹', '') },
+        { label: 'Number of Months:', value: document.getElementById('summaryMonths').textContent },
+        { label: 'Number of Years:', value: document.getElementById('summaryYears').textContent }
+    ];
+    
+    // Calculate positions for 2-row, multi-column layout
+    const columnWidth = summaryBoxWidth / 3;
+    const rowHeight = 70;
+    
+    // First row - 3 items
+    for (let i = 0; i < 3; i++) {
+        const x = summaryBoxX + (columnWidth * i) + (columnWidth / 2);
+        const y = yPos + 80;
+        
+        doc.setTextColor(100, 100, 100);
+        doc.setFont('helvetica', 'bold');
+        // Center align the label
+        const labelWidth = doc.getTextWidth(fullSummaryData[i].label);
+        doc.text(fullSummaryData[i].label, x - (labelWidth / 2), y);
+        
+        doc.setTextColor(44, 62, 80);
+        doc.setFont('helvetica', 'bold');
+        // Center align the value
+        const valueWidth = doc.getTextWidth(fullSummaryData[i].value);
+        
+        // Add blue background for Total Amount
+        if (i === 2) {
+            doc.setFillColor(232, 240, 254);
+            const bgWidth = valueWidth + 20;
+            doc.roundedRect(x - (bgWidth / 2), y + 10, bgWidth, 30, 3, 3, 'F');
+            doc.setTextColor(64, 139, 230);
+        }
+        
+        doc.text(fullSummaryData[i].value, x - (valueWidth / 2), y + 25);
+    }
+    
+    // Second row - 4 items
+    for (let i = 3; i < 7; i++) {
+        // For the last two items, we want different positioning
+        let x;
+        if (i === 5) { // Number of Years
+            x = summaryBoxX + (columnWidth * 2) + (columnWidth / 4);
+        } else if (i === 6) { // Number of Months
+            x = summaryBoxX + (columnWidth * 2) + (columnWidth * 3/4);
+        } else {
+            x = summaryBoxX + (columnWidth * (i-3)) + (columnWidth / 2);
+        }
+        
+        const y = yPos + 140;
+        
+        doc.setTextColor(100, 100, 100);
+        doc.setFont('helvetica', 'bold');
+        // Center align the label
+        const labelWidth = doc.getTextWidth(fullSummaryData[i].label);
+        doc.text(fullSummaryData[i].label, x - (labelWidth / 2), y);
+        
+        doc.setTextColor(44, 62, 80);
+        doc.setFont('helvetica', 'bold');
+        // Center align the value
+        const valueWidth = doc.getTextWidth(fullSummaryData[i].value);
+        
+        // Add green background for Total Amount Saved
+        if (i === 4) {
+            doc.setFillColor(232, 254, 240);
+            const bgWidth = valueWidth + 20;
+            doc.roundedRect(x - (bgWidth / 2), y + 10, bgWidth, 30, 3, 3, 'F');
+            doc.setTextColor(39, 174, 96);
+        }
+        
+        doc.text(fullSummaryData[i].value, x - (valueWidth / 2), y + 25);
+    }
+    
+    yPos += summaryBoxHeight + 40;
+
+    // EMI Details Table - optimized for A3
+    const table = document.getElementById('emiTable');
+    const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim());
+    const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
+        Array.from(tr.querySelectorAll('td')).map(td => 
+            td.textContent.replace(/[₹,]/g, '').trim()
+        )
+    );
+
+    const tableWidth = 1000;  // Wider table for A3
+    const tableX = (pageWidth - tableWidth) / 2;
+
+    // Define column styles based on which columns are shown
+    const columnStyles = {
+        0: { cellWidth: 120 }     // Month
+    };
+
+    // Calculate column widths based on how many columns we have
+    const totalColumns = headers.length;
+    const remainingWidth = tableWidth - 120; // Subtract month column width
+    const standardColumnWidth = Math.floor(remainingWidth / (totalColumns - 1));
+
+    // Set widths for all columns
+    for (let i = 1; i < totalColumns; i++) {
+        columnStyles[i] = { cellWidth: standardColumnWidth };
+    }
+
+    doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: yPos,
+        theme: 'grid',
+        styles: {
+            font: 'helvetica',
+            fontSize: 11,  // Larger font
+            cellPadding: 10,
+            halign: 'center',
+            valign: 'middle',
+            lineColor: [220, 220, 220],
+            lineWidth: 0.5
+        },
+        headStyles: {
+            fillColor: [64, 139, 230],
+            textColor: [255, 255, 255],
+            fontSize: 12,
+            fontStyle: 'bold',
+            halign: 'center',
+            cellPadding: 12
+        },
+        columnStyles: columnStyles,
+        alternateRowStyles: {
+            fillColor: [248, 248, 248]
+        },
+        margin: {
+            left: tableX,
+            right: tableX
+        },
+        tableWidth: tableWidth
+    });
+
+    // Save PDF
+    doc.save('EMI_Calculator_Report.pdf');
+}
+
+function exportExcel() {
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Get summary data
+    const summaryData = [
+        ['EMI Calculator Report'],
+        [''],
+        ['Summary'],
+        ['Principal Amount', document.getElementById('totalPrincipal').textContent],
+        ['Total Interest', document.getElementById('totalInterest').textContent],
+        ['Total Amount:', document.getElementById('totalAmount').textContent],
+        [''],
+        ['EMI Details'],
+        ['']
+    ];
+
+    // Get table headers and data
+    const table = document.getElementById('emiTable');
+    const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent);
+    const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
+        Array.from(tr.querySelectorAll('td')).map(td => td.textContent)
+    );
+
+    // Combine all data
+    const wsData = [
+        ...summaryData,
+        headers,
+        ...rows
+    ];
+
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Set column widths based on content
+    const yearlyExtraEmi = parseFloat(document.getElementById('extraEmi').value) || 0;
+    const hikePercentage = parseFloat(document.getElementById('hikePercentage').value) || 0;
+
+    // Dynamically set column widths based on which columns are shown
+    const colWidths = [
+        { wch: 20 },  // Month - increased width for month-year format
+        { wch: 15 }, // EMI
+        { wch: 15 }, // Principal
+        { wch: 15 }, // Interest
+        { wch: 15 }  // Balance
+    ];
+    
+    // Add Extra column if needed
+    if (yearlyExtraEmi > 0) {
+        colWidths.push({ wch: 15 }); // Extra
+    }
+    
+    // Add Hike column if needed
+    if (hikePercentage > 0) {
+        colWidths.push({ wch: 15 }); // Hike Amount
+    }
+
+    ws['!cols'] = colWidths;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'EMI Calculator');
+    
+    // Save Excel file
+    XLSX.writeFile(wb, 'EMI_Calculator_Report.xlsx');
+}
+
+// Add input event listeners to all input fields
+function addInputListeners() {
+    const inputPairs = [
+        { number: 'principal', slider: 'principalSlider' },
+        { number: 'interest', slider: 'interestSlider' },
+        { number: 'tenure', slider: 'tenureSlider' },
+        { number: 'extraEmi', slider: 'extraEmiSlider' },
+        { number: 'hikePercentage', slider: 'hikeSlider' }
+    ];
+    
+    inputPairs.forEach(pair => {
+        const numberInput = document.getElementById(pair.number);
+        const sliderInput = document.getElementById(pair.slider);
+        
+        // Sync number input to slider
+        numberInput.addEventListener('input', () => {
+            sliderInput.value = numberInput.value;
+            updateSliderBackground(sliderInput);
+            calculateEMI();
+        });
+        
+        // Sync slider to number input
+        sliderInput.addEventListener('input', () => {
+            numberInput.value = sliderInput.value;
+            updateSliderBackground(sliderInput);
+            calculateEMI();
+        });
+
+        // Initialize slider background
+        updateSliderBackground(sliderInput);
+    });
+}
+
+// Add this to your addInputListeners function
+function updateSliderBackground(slider) {
+    const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+    slider.style.background = `linear-gradient(to right, #69b3e7 0%, #69b3e7 ${value}%, #e2e8f0 ${value}%, #e2e8f0 100%)`;
+}
+
+// Format currency for display
+function formatCurrency(value) {
+    return '₹' + Math.round(value).toLocaleString('en-IN');
+}
+
+// New function to update chart overlay
+function updateChartOverlay(principal, totalInterest) {
+    const total = principal + totalInterest;
+    const principalPercentage = Math.round((principal / total) * 100);
+    const interestPercentage = Math.round((totalInterest / total) * 100);
+    
+    // Update percentages
+    document.querySelector('.principal-percentage').textContent = `${principalPercentage}%`;
+    document.querySelector('.interest-percentage').textContent = `${interestPercentage}%`;
+    
+    // Update amounts
+    document.querySelector('.principal-amount').textContent = formatCurrency(principal);
+    document.querySelector('.interest-amount').textContent = formatCurrency(totalInterest);
+}
+
+// Call this when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    // Set default date to today
+    const today = new Date();
+    const dateString = today.toISOString().split('T')[0];
+    document.getElementById('startDate').value = dateString;
+    
+    // Add listener for date change
+    document.getElementById('startDate').addEventListener('change', calculateEMI);
+    
+    addInputListeners();
+    
+    // Initialize table headers before first calculation
+    const yearlyExtraEmi = parseFloat(document.getElementById('extraEmi').value) || 0;
+    const hikePercentage = parseFloat(document.getElementById('hikePercentage').value) || 0;
+    
+    const tableHead = document.querySelector('#emiTable thead tr');
+    tableHead.innerHTML = `
+        <th class="header-button">Month</th>
+        <th class="header-button">EMI</th>
+        <th class="header-button">Principal</th>
+        <th class="header-button">Interest</th>
+        <th class="header-button">Balance</th>
+        ${yearlyExtraEmi > 0 ? '<th class="header-button">Extra</th>' : ''}
+        ${hikePercentage > 0 ? '<th class="header-button">Hike Amount</th>' : ''}
+    `;
+    
+    calculateEMI();
+}); </script></body>
+</html> 
