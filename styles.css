@@ -1,0 +1,621 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap");
+
+:root {
+    /* Color Palette - Matching Glass Effect Reference */
+    --c-glass: #bbbbbc;
+    --c-light: #fff;
+    --c-dark: #000;
+    --c-content: #224;
+    --c-action: #0052f5;
+    --c-bg: #e8e8e9;
+
+    --glass-reflex-dark: 1;
+    --glass-reflex-light: 1;
+    --saturation: 150%;
+
+    /* Specific UI Colors */
+    --c-principal: #0088ff;
+    --c-interest: #ff5555;
+    --transition: all 0.4s cubic-bezier(1, 0, 0.4, 1);
+}
+
+[data-theme="dark"] {
+    --c-glass: #bbbbbc;
+    --c-light: #fff;
+    --c-dark: #000;
+    --c-content: #e1e1e1;
+    --c-action: #03d5ff;
+    --c-bg: #1b1b1d;
+    --glass-reflex-dark: 2;
+    --glass-reflex-light: 0.3;
+}
+
+[data-theme="dim"] {
+    --c-light: #99deff;
+    --c-dark: #20001b;
+    --c-glass: hsl(335 250% 74% / 1);
+    --c-content: #d5dbe2;
+    --c-action: #ff48a9;
+    --c-bg: #152433;
+    --glass-reflex-dark: 2;
+    --glass-reflex-light: 0.7;
+    --saturation: 200%;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "DM Sans", sans-serif;
+}
+
+body {
+    background:
+        radial-gradient(1200px 600px at 10% 0%, color-mix(in srgb, var(--c-bg) 88%, var(--c-light) 12%), transparent 70%),
+        radial-gradient(900px 520px at 90% 10%, color-mix(in srgb, var(--c-bg) 78%, var(--c-dark) 22%), transparent 70%),
+        linear-gradient(180deg, color-mix(in srgb, var(--c-bg) 92%, var(--c-dark) 8%), var(--c-bg));
+    color: var(--c-content);
+    min-height: 100vh;
+    padding: 40px 20px;
+    transition: background 400ms cubic-bezier(1, 0, 0.4, 1),
+        color 400ms cubic-bezier(1, 0, 0.4, 1);
+}
+
+.app-shell {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 28px;
+    border-radius: 32px;
+}
+
+.container {
+    max-width: 1000px;
+    /* Reduced for more compact feel */
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* Glass Panel Base */
+.glass-panel {
+    background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
+    backdrop-filter: blur(8px) url(#switcher) saturate(var(--saturation));
+    -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
+    border-radius: 24px;
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+        inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+        inset -2px -2px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
+        inset -3px -8px 1px -6px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
+        inset -0.3px -1px 4px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent),
+        inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+        inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+        inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+        0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+        0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
+    transition: background-color 400ms cubic-bezier(1, 0, 0.4, 1), box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
+}
+
+/* Header */
+.main-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+}
+
+.main-header h1 {
+    font-size: 24px;
+    padding: 12px 32px;
+}
+
+.date-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    margin-left: auto;
+}
+
+.date-selector label {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: 0.7;
+    margin-bottom: 0;
+}
+
+.date-selector input {
+    background: transparent;
+    border: none;
+    color: var(--c-content);
+    font-weight: 500;
+    outline: none;
+    font-size: 10px;
+    cursor: pointer;
+    background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Top Section - Calculator and Chart Side-by-Side */
+.top-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+/* Calculator Box */
+.calculator-box {
+    padding: 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* Reduced gap */
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 2px;
+    /* Reduced margin */
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.input-with-slider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.input-with-slider input[type="number"] {
+    width: 90px;
+    padding: 8px;
+    background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+    border: none;
+    border-radius: 10px;
+    color: var(--c-content);
+    font-weight: 600;
+    outline: none;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.input-with-slider input[type="range"] {
+    flex: 1;
+    height: 8px;
+    background-color: color-mix(in srgb, var(--c-light) 10%, transparent);
+    backdrop-filter: blur(4px);
+    border-radius: 999px;
+    appearance: none;
+    outline: none;
+    border: 1px solid color-mix(in srgb, var(--c-light) 30%, transparent);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: background 200ms ease, box-shadow 200ms ease;
+}
+
+.input-with-slider input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 999px;
+    background: transparent;
+}
+
+.input-with-slider input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4));
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.05);
+    margin-top: -6px;
+    /* Center thumb on track */
+}
+
+.input-with-slider input[type="range"]::-moz-range-track {
+    height: 8px;
+    border-radius: 999px;
+    background: transparent;
+    border: none;
+}
+
+.input-with-slider input[type="range"]::-moz-range-progress {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--c-action);
+}
+
+.input-with-slider input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4));
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.05);
+    border: none;
+    /* remove default border */
+}
+
+/* Remove default slider coloring js overriding for now to let CSS handle it cleanly or update JS */
+
+/* Icons and Export Buttons */
+.export-buttons-container {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.export-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 99em;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
+    backdrop-filter: blur(8px) url(#switcher) saturate(var(--saturation));
+    -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+        inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+        inset -2px -2px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
+        inset -3px -8px 1px -6px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
+        inset -0.3px -1px 4px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent),
+        inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+        inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+        inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+        0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+        0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
+    transition: var(--transition);
+}
+
+.pdf-btn {
+    color: #ff5555;
+    /* background: color-mix(in srgb, #ff5555 8%, transparent); */
+}
+
+.excel-btn {
+    color: #2ecc71;
+    /* background: color-mix(in srgb, #2ecc71 8%, transparent); */
+}
+
+.export-btn:hover {
+    transform: translateY(-2px);
+    background-color: color-mix(in srgb, var(--c-glass) 25%, transparent);
+}
+
+/* Pie Chart Section - Symmetrical */
+.chart-section {
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100% !important;
+    height: 100%;
+    /* Ensure it takes full height of grid item */
+    min-height: 400px;
+    /* Reduced height constraint */
+}
+
+.chart-container {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin-bottom: 24px;
+    background: color-mix(in srgb, var(--c-glass) 5%, transparent);
+    border-radius: 50%;
+    padding: 10px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow:
+        inset 0 0 10px rgba(255, 255, 255, 0.1),
+        0 4px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 65%;
+    height: 65%;
+    background: color-mix(in srgb, var(--c-glass) 15%, transparent);
+    backdrop-filter: blur(12px) saturate(var(--saturation));
+    -webkit-backdrop-filter: blur(12px) saturate(var(--saturation));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+        inset 2px 2px 5px rgba(255, 255, 255, 0.1),
+        0 4px 15px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.chart-info {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 80%;
+}
+
+.chart-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.chart-item .label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.6;
+    margin-bottom: 2px;
+}
+
+.chart-percentage {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--c-action);
+}
+
+.principal-percentage {
+    color: var(--c-principal);
+}
+
+.interest-percentage {
+    color: var(--c-interest);
+}
+
+.chart-amount {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.legend-container {
+    display: flex;
+    gap: 16px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.legend-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+}
+
+/* Payment Summary */
+.payment-summary-container {
+    padding: 32px !important;
+}
+
+.payment-summary-container h2 {
+    margin-bottom: 24px;
+    font-size: 20px;
+    color: #000;
+}
+
+.payment-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.summary-item {
+    padding: 16px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+    background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
+    backdrop-filter: blur(8px) url(#switcher) saturate(var(--saturation));
+    -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+        inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+        inset -2px -2px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
+        inset -3px -8px 1px -6px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
+        inset -0.3px -1px 4px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent),
+        inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+        inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+        inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+        0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+        0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
+    transition: var(--transition);
+}
+
+.summary-label {
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.5;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+/* Summary item nth-child(3) now follows base styles */
+
+/* Table Section */
+.table-container {
+    border-radius: 16px;
+    overflow-y: auto;
+    max-height: 500px;
+    background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+    /* Explicit glass bg */
+    backdrop-filter: blur(8px) url(#switcher) saturate(var(--saturation));
+    /* Add frost */
+    -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--c-light) 10%, transparent),
+        0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    padding: 14px 20px;
+    text-align: center;
+    background-color: color-mix(in srgb, var(--c-glass) 20%, transparent);
+    backdrop-filter: blur(8px) url(#switcher) saturate(var(--saturation));
+    -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
+    font-size: 13px;
+    font-weight: 700;
+    color: #000;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* Individual glass card look */
+    border-radius: 12px;
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+        inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+        0 2px 5px rgba(0, 0, 0, 0.05);
+    /* Margins to separate headers */
+    background-clip: padding-box;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    /* Actually border hack for spacing visual, or use valid margin on block-display th if table display allows, or pseudo elements */
+}
+
+/* Better spacing hack for TH */
+th:first-child {
+    border-left: none;
+}
+
+th:last-child {
+    border-right: none;
+}
+
+td {
+    padding: 12px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    /* Subtler darker border for light theme */
+    font-size: 13px;
+    color: var(--c-content);
+}
+
+/* Specific theme overrides if needed for border visibility */
+[data-theme="dark"] td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dim"] td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+tr:hover td {
+    background: color-mix(in srgb, var(--c-action) 5%, transparent);
+}
+
+/* Theme Switcher */
+.theme-switcher {
+    position: fixed;
+    z-index: 1000;
+    top: 30px;
+    right: 30px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px;
+    border-radius: 99em;
+}
+
+.theme-switcher__option {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-switcher__option svg {
+    width: 22px;
+    height: 22px;
+    fill: var(--c-content);
+    transition: transform 0.3s cubic-bezier(0.5, 0, 0, 1);
+}
+
+.theme-switcher__option:hover {
+    background: color-mix(in srgb, var(--c-action) 10%, transparent);
+}
+
+.theme-switcher__option:hover svg {
+    fill: var(--c-action);
+    transform: scale(1.15);
+}
+
+.theme-switcher__option.active {
+    background-color: color-mix(in srgb, var(--c-glass) 36%, transparent) !important;
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--c-light) 10%, transparent),
+        inset 2px 1px 0px -1px color-mix(in srgb, var(--c-light) 90%, transparent),
+        0px 3px 6px 0px rgba(0, 0, 0, 0.08) !important;
+}
+
+@media (max-width: 850px) {
+    .top-section {
+        grid-template-columns: 1fr;
+    }
+
+    .app-shell {
+        padding: 18px;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+
+    .main-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
