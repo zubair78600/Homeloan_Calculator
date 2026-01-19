@@ -238,10 +238,14 @@ function updatePieChart(principal, totalInterest) {
                 },
                 tooltip: {
                     enabled: true,
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
                     padding: 12,
-                    cornerRadius: 8,
+                    cornerRadius: 12,
                     displayColors: true,
+                    usePointStyle: true,
+                    boxPadding: 6,
                     callbacks: {
                         label: function (context) {
                             const label = context.label || '';
