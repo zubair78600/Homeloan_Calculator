@@ -632,33 +632,59 @@ function updateSliderBackground(slider) {
 }
 
 
+// Track previous selected option for switcher animation
+function trackPrevious(el) {
+    const radios = el.querySelectorAll('input[type="radio"]');
+    let previousValue = null;
+
+    // init first select
+    const initiallyChecked = el.querySelector('input[type="radio"]:checked');
+    if (initiallyChecked) {
+        previousValue = initiallyChecked.getAttribute("c-option");
+        el.setAttribute("c-previous", previousValue);
+    }
+
+    radios.forEach((radio) => {
+        radio.addEventListener("change", () => {
+            if (radio.checked) {
+                el.setAttribute("c-previous", previousValue ?? "");
+                previousValue = radio.getAttribute("c-option");
+            }
+        });
+    });
+}
+
 // Theme switching
 function initThemeSwitcher() {
-    const themeOptions = document.querySelectorAll('.theme-switcher__option');
+    const switcher = document.querySelector(".switcher");
+    if (switcher) trackPrevious(switcher);
 
-    themeOptions.forEach(option => {
-        option.addEventListener('click', () => {
-            const theme = option.dataset.theme;
+    const themeRadios = document.querySelectorAll('.switcher__input');
 
-            // Update data-theme attribute on document root
-            document.documentElement.setAttribute('data-theme', theme);
+    themeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.checked) {
+                const theme = radio.value;
 
-            // Update active state
-            themeOptions.forEach(opt => opt.classList.remove('active'));
-            option.classList.add('active');
+                // Update data-theme attribute on document root
+                document.documentElement.setAttribute('data-theme', theme);
 
-            // Update chart colors after theme change
-            setTimeout(() => {
-                const principalValue = parseFloat(document.getElementById('principal').value);
-                const totalInterestValue = parseFloat(document.getElementById('summaryInterest').textContent.replace(/[₹,]/g, ''));
-                if (!isNaN(principalValue) && !isNaN(totalInterestValue)) {
-                    updatePieChart(principalValue, totalInterestValue);
-                }
+                // Update chart colors after theme change
+                setTimeout(() => {
+                    const principalValue = parseFloat(document.getElementById('principal').value);
+                    const summaryInterestEl = document.getElementById('summaryInterest');
+                    if (summaryInterestEl) {
+                        const totalInterestValue = parseFloat(summaryInterestEl.textContent.replace(/[₹,]/g, ''));
+                        if (!isNaN(principalValue) && !isNaN(totalInterestValue)) {
+                            updatePieChart(principalValue, totalInterestValue);
+                        }
+                    }
 
-                // Update all slider backgrounds
-                const sliders = document.querySelectorAll('input[type="range"]');
-                sliders.forEach(updateSliderBackground);
-            }, 100);
+                    // Update all slider backgrounds
+                    const sliders = document.querySelectorAll('input[type="range"]');
+                    sliders.forEach(updateSliderBackground);
+                }, 100);
+            }
         });
     });
 }
