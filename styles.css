@@ -448,11 +448,20 @@ body {
     flex: 1;
     min-width: 120px;
     padding: 12px 8px;
-    border-radius: 16px;
     display: flex;
     flex-direction: column;
     gap: 4px;
     text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.summary-item::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    z-index: -1;
     background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
     backdrop-filter: blur(8px) url(#switcher) saturate(var(--saturation));
     -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
@@ -467,7 +476,7 @@ body {
         inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
         0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
         0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
-    transition: all 0.4s cubic-bezier(1, 0, 0.4, 1);
+    transition: background-color 400ms cubic-bezier(1, 0, 0.4, 1), box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
 }
 
 .summary-label {
@@ -508,17 +517,25 @@ table {
 th {
     padding: 16px 20px;
     text-align: center;
-    background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
-    backdrop-filter: blur(8px) url(#switcher) saturate(var(--saturation));
-    -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
     font-size: 13px;
     font-weight: 700;
     color: var(--c-content);
     position: sticky;
     top: 0;
     z-index: 10;
-    /* Match Summary Card Look */
+    background: transparent;
+    border: none;
+}
+
+th::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
     border-radius: 20px;
+    z-index: -1;
+    background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
+    backdrop-filter: blur(8px) url(#switcher) saturate(var(--saturation));
+    -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
     box-shadow:
         inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
         inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
@@ -530,10 +547,7 @@ th {
         inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
         0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
         0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
-
-    background-clip: padding-box;
-    border: 4px solid transparent;
-    /* Spacing between cards */
+    transition: background-color 400ms cubic-bezier(1, 0, 0.4, 1), box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
 }
 
 thead {
@@ -542,15 +556,6 @@ thead {
 
 thead tr {
     background: transparent;
-}
-
-/* Better spacing hack for TH */
-th:first-child {
-    border-left: none;
-}
-
-th:last-child {
-    border-right: none;
 }
 
 td {
